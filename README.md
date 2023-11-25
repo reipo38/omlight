@@ -4,7 +4,7 @@ bash script for controlling omen keyboard lightning using pelrun's kernel module
 # Dependancies
 This script ENTIRELY depends on [pelrun's kernel module](https://github.com/pelrun/hp-omen-linux-module) for the HP Omen, which is HIGHLY EXPERIMENTAL:
 The module creates a virtual directory called rgb_zones inside /sys/devices/platform/hp-wmi which is created again EVERY TIME on BOOT and is owned by root. in order for this 
-script to work the rgb_zones directory has to be owned by the user. I am yet to figure out how to do that and when I do I will create an installation scripts that sets it up and 
+script to work the rgb_zones directory has to be owned by the user. I am yet to figure out how to change ownership on startup and when I do I will create an installation scripts that sets it up and 
 adds the script to the USER BINARIES for easy access.
 
 # Usage
