@@ -30,5 +30,5 @@ you have to enter one hex or one supported colour that will be applied to the wh
 ## ind/ individual
 you have to specify the zone that you want to change the color for and then enter a hex or a supported colour
 ```
-./omlight ind red
+./omlight ind 0 red
 ```
