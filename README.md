@@ -14,7 +14,7 @@ this function uses a mainloop, meaning if you want to close the terminal after c
 it has two flags:
 ### -m/ --manual
 you have to enter three colours you want the wave function to loop through either by hex or by the name of the colour if supported (red, green, blue, purple, yellow, cyan, lime, orange, pink white)
-´./omlight wave -m red green blue
+´´´./omlight wave -m red green blue´´
 ### -p/ --preset
 you can choose between a few ready presets each containing 3 shades of the colour that the preset is named after (red, green, blue, purple, yellow, cyan, lime, pink)
 './omlight wave -p red'
