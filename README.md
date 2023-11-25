@@ -37,3 +37,8 @@ you have to specify the zone that you want to change the color for and then ente
 ```
 ./omlight ind 0 red
 ```
+# To do
+- [ ] Set up permissions on startup
+- [ ] Write manual entry
+- [ ] Create installation script
+      
