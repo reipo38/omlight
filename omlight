@@ -1,0 +1,118 @@
+#!/bin/bash
+
+z3="/sys/devices/platform/hp-wmi/rgb_zones/zone03"
+z2="/sys/devices/platform/hp-wmi/rgb_zones/zone02"
+z1="/sys/devices/platform/hp-wmi/rgb_zones/zone01"
+z0="/sys/devices/platform/hp-wmi/rgb_zones/zone00"
+
+lock_file="/tmp/your_script.lock"
+
+if [ -e "$lock_file" ]; then
+    old_pid=$(cat "$lock_file")
+    if ps -p $old_pid > /dev/null; then
+        kill $old_pid
+        sleep 0.1
+    fi
+fi
+echo "$$" > "$lock_file"
+
+convert_to_hex() {
+    case $1 in
+        "red") echo "FF0000" ;;
+        "green") echo "00FF00" ;;
+        "blue") echo "0000FF" ;;
+        "purple") echo "7F00FF" ;;
+        "yellow") echo "fff300" ;;
+        "cyan") echo "00FFFF" ;;
+        "lime") echo "bfff00" ;;
+        "orange") echo "FF5F1F" ;;
+        "pink") echo "ff00bf" ;;
+	"white") echo "ffffff" ;;
+        *) echo "$1" ;;
+    esac
+}
+
+mix() {
+    case $1 in
+        "red") echo "8B0000 CC00CC FF0000" ;;
+        "green") echo "355E3B 50C878 7CFC00" ;;
+        "blue") echo "0047AB 0096FF 1F51FF" ;;
+        "purple") echo "CC00CC 8B008B 7F00FF" ;;
+        "yellow") echo "FFBF00 FFEA00 FFFF8F" ;;
+        "cyan") echo "008080 00FFFF 1F51FF" ;;
+        "lime") echo "32CD32 bfff00 7FFF00" ;;
+        "pink") echo "DE3163 FF69B4 F33A6A" ;;
+        *) echo "Invalid argument" exit 1 ;;
+    esac
+}
+
+wave() {
+    hex_arr=("$@")
+    current_index=0
+
+    while true; do
+	trap "exit 1" ERR
+        current_value=${hex_arr[current_index]}
+        previous_index=$(( (current_index - 1 + ${#hex_arr[@]}) % ${#hex_arr[@]} ))
+        previous_value=${hex_arr[previous_index]}
+        next_index=$(( (current_index + 1) % ${#hex_arr[@]} ))
+        next_value=${hex_arr[next_index]}
+
+        echo "$previous_value">"$z3"
+        echo "$current_value">"$z2"
+        echo "$next_value">"$z1"
+        echo "$previous_value">"$z0"
+
+        sleep 0.5
+        current_index=$(( (current_index + 1) % ${#hex_arr[@]} ))
+    	trap - ERR
+	done
+}
+
+static() {
+    hex=$(convert_to_hex "$1")
+    echo "$hex">"$z3"
+    echo "$hex">"$z2"
+    echo "$hex">"$z1"
+    echo "$hex">"$z0"
+}
+
+individual() {
+	echo "$2">"$1"
+}
+if [ "$1" == "wave" ]; then
+    if [[ "$2" == "-m" || "$2" == "--manual" ]]; then
+        shift 2
+        values=()
+        for arg in "$@"; do
+            values+=("$(convert_to_hex "$arg")")
+        done
+        wave "${values[@]}"
+    elif [[ "$2" == "-p" || "$2" == "--preset" ]]; then
+        shift 2
+        wave $(mix "$1")
+    elif [[ "$2" == "-s" || "$2" == "--stop" ]]; then
+	exit 0
+    else
+        echo "Invalid wave command"
+    fi
+elif [[ "$1" == "static" || "$1" == "stat" ]]; then
+    if [ "$#" == 2 ]; then    
+	static "$2"
+    else
+	echo "Invalid argument (colour)"
+    fi
+elif [[ "$1" == "individual" || "$1" == "ind" ]]; then
+    if [ "$#" == 3 ]; then
+	case "$2" in
+	    0) individual "$z0" "$(convert_to_hex "$3")" ;;
+	    1) individual "$z1" "$(convert_to_hex "$3")" ;;
+	    2) individual "$z2" "$(convert_to_hex "$3")" ;;
+	    3) individual "$z2" "$(convert_to_hex "$3")" ;;
+	esac
+    else
+	echo "Invalid arguments (zone and colour)"
+    fi
+else
+    echo "Invalid subcommand"
+fi
